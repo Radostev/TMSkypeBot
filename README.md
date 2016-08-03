@@ -56,3 +56,5 @@ set up forwarding https requests.
 Right after registration in botframework, skype channel is enabled by default.
 To enable other channels like Slack or Facebook Messenger add a new channel
 follow instructions.
+
+![Channels](https://dl.dropboxusercontent.com/u/3288386/TMUBot/channels.png)
