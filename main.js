@@ -57,7 +57,7 @@ bot.dialog('/', [
             ]);
         var msg = new builder.Message(session).attachments([card]);
         session.send(msg);
-        session.send("Hello! I'm the TicketMaster bot for Skype. I can search for events at ticketmaster.com.");
+        session.send("Hello! I'm the TicketMaster Universal bot. I can search for events at ticketmaster.com.");
         session.beginDialog('/help');
     }
 ]);
