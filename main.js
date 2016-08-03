@@ -9,9 +9,18 @@ var https = require('https');
 //=========================================================
 
 // Setup Restify Server
+// If you have valid certificates:
+// var fs = require('fs');
+// var https_options = {
+//  key: fs.readFileSync('./signed.key'),
+//  certificate: fs.readFileSync('./signed.cert')
+// };
+// var server = restify.createServer(https_options);
+// If you do not have valid certificates,
+// use ngrok to forward https requests to this http server:
 var server = restify.createServer();
 server.listen(Number(process.env.BOT_PORT), function () {
-   console.log('%s listening to %s', server.name, server.url);
+  console.log('%s listening to %s', server.name, server.url);
 });
 
 // Create chat bot
@@ -31,7 +40,7 @@ bot.endConversationAction('cancel', 'Ok, this search was canceled',
 bot.beginDialogAction('help', '/help',
                       { matches: /^help/i });
 bot.beginDialogAction('search', '/search',
-                  { matches: /^search/i });
+                      { matches: /^search/i });
 
 //=========================================================
 // Bots Dialogs
@@ -41,7 +50,7 @@ bot.dialog('/', [
     function (session) {
         // Send a greeting and show help.
         var card = new builder.HeroCard(session)
-            .title("Ticket Master Skype Bot")
+            .title("Ticket Master Bot")
             .text("Searching for events and venues.")
             .images([
                  builder.CardImage.create(session, "https://dl.dropboxusercontent.com/u/3288386/T.png")
@@ -50,14 +59,6 @@ bot.dialog('/', [
         session.send(msg);
         session.send("Hello! I'm the TicketMaster bot for Skype. I can search for events at ticketmaster.com.");
         session.beginDialog('/help');
-    // },
-    // function (session, results) {
-    //     // Display search menu
-    //     session.beginDialog('/search');
-    // },
-    // function (session, results) {
-    //     // Always say goodbye
-    //     session.send("See you later!");
     }
 ]);
 
@@ -117,11 +118,20 @@ bot.dialog('/events', [
               if (jsonObject._embedded == undefined){
                 session.endDialog("Sorry, but there are no such events.");
               } else {
-                session.send("How about the following event?");
-                var repl = jsonObject._embedded.events[0].name;
-                session.userData.eventObject = jsonObject._embedded.events[0];
-                session.send(jsonObject._embedded.events[0].images[0].url);
-                session.endDialog(repl);
+                session.send("How about the following events?");
+                var events = jsonObject._embedded.events;
+                for (i = 0; i < events.length; ++i) {
+                  var card = new builder.HeroCard(session)
+                      .title(events[i].name)
+                      .text(events[i].description)
+                      .images([
+                           builder.CardImage.create(session,
+                             events[i].images[0].url)])
+                      .tap(builder.CardAction.openUrl(session, events[i].url));
+                  var msg = new builder.Message(session).attachments([card]);
+                  session.send(msg);
+                }
+                session.endDialog();
               }
             } catch (err) {
               console.log(err);
@@ -158,15 +168,20 @@ bot.dialog('/venues', [
           response.on('end', function () {
             try {
               var jsonObject = JSON.parse(body);
-              console.log(jsonObject);
               if (jsonObject._embedded == undefined){
                 session.endDialog("Sorry, but there are no such venues.");
               } else {
-                session.send("How about the following venue?");
-                var repl = jsonObject._embedded.venues[0].name;
-                session.userData.eventObject = jsonObject._embedded.venues[0];
-                session.send(jsonObject._embedded.venues[0].url);
-                session.endDialog(repl);
+                session.send("How about the following venues?");
+                var venues = jsonObject._embedded.venues;
+                for (i = 0; i < venues.length; ++i) {
+                  var card = new builder.HeroCard(session)
+                      .title(venues[i].name)
+                      .text("In " + venues[i].city.name + ".")
+                      .tap(builder.CardAction.openUrl(session, venues[i].url));
+                  var msg = new builder.Message(session).attachments([card]);
+                  session.send(msg);
+                }
+                session.endDialog();
               }
             } catch (err) {
               console.log(err);
@@ -186,7 +201,7 @@ bot.dialog('/venues', [
 
 function buildOptions(session, type, keyword, city, size) {
   if (size == undefined){
-    size = 1;
+    size = 3;
   }
   var params = {'size': size, 'apikey': process.env.API_KEY,
                 'keyword': keyword};
