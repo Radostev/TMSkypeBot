@@ -6,11 +6,10 @@ TicketMaster Universal Bot
 The TicketMaster Bot is a bot for searching events and venues at TicketMaster.
 This bot is based on the Microsoft Bot Builder SDK (http://botframework.com).
 
-Skype:
+## Examples:
 
 ![Skype example](https://dl.dropboxusercontent.com/u/3288386/TMUBot/Skype.png)
 
-Slack:
 
 ![Slack example](https://dl.dropboxusercontent.com/u/3288386/TMUBot/Slack.png)
 
